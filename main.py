@@ -1,41 +1,55 @@
 import os
 import sys
 import asyncio
-from services.auto_poster import auto_poster
+import threading
 from pathlib import Path
-from handlers.command_handlers import start, articles_command, dashboard_command
+from flask import Flask
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
+# Thêm path tới project
 sys.path.append(str(Path(__file__).parent))
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
+# Import các phần bạn đã viết
 from config import BOT_TOKEN
-from handlers.command_handlers import start
+from handlers.command_handlers import start, articles_command, dashboard_command
 from handlers.callback_handlers import button_handler
 from handlers.message_handlers import handle_message
-from handlers.command_handlers import start, articles_command
-
-import asyncio
 from services.auto_poster import auto_poster
 
-def main():
+
+# ================== WEB SERVER (KEEP-ALIVE) ==================
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "🤖 Telegram bot is alive on Render!"
+
+
+def run_web():
+    """Chạy web server trên PORT mà Render yêu cầu"""
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+
+# ================== TELEGRAM BOT ==================
+def run_bot():
     """Khởi chạy bot Telegram"""
     updater = Updater(BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    # Thêm handlers
+    # Command handlers
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("articles", articles_command))
     dp.add_handler(CommandHandler("dashboard", dashboard_command))
     dp.add_handler(CallbackQueryHandler(button_handler))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
-    # Bắt đầu auto-poster trong một thread riêng
+    # Auto poster chạy trong thread riêng
     def start_auto_poster():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(auto_poster.start())
-    
-    import threading
+
     auto_poster_thread = threading.Thread(target=start_auto_poster)
     auto_poster_thread.daemon = True
     auto_poster_thread.start()
@@ -45,5 +59,12 @@ def main():
     updater.idle()
 
 
+# ================== MAIN ==================
 if __name__ == "__main__":
-    main()
+    # Chạy web server trong 1 thread
+    web_thread = threading.Thread(target=run_web)
+    web_thread.daemon = True
+    web_thread.start()
+
+    # Chạy bot chính
+    run_bot()
