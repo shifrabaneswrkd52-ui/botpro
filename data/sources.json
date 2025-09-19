@@ -1,0 +1,65 @@
+{
+  "VnExpress_Thời sự": {
+    "newspaper": "VnExpress",
+    "category": "Thời sự",
+    "rss_url": "https://vnexpress.net/rss/thoi-su.rss",
+    "title": "Thời sự - VnExpress RSS",
+    "description": "VnExpress RSS",
+    "link": "https://vnexpress.net/rss/thoi-su.rss",
+    "added_date": "2025-09-17 10:04:55.437172"
+  },
+  "VnExpress_Khoa học": {
+    "newspaper": "VnExpress",
+    "category": "Khoa học",
+    "rss_url": "https://vnexpress.net/rss/khoa-hoc.rss",
+    "title": "Khoa học công nghệ - VnExpress RSS",
+    "description": "VnExpress RSS",
+    "link": "https://vnexpress.net/rss/khoa-hoc-cong-nghe.rss",
+    "added_date": "2025-09-17 10:05:13.187076"
+  },
+  "VnExpress_Đời sống": {
+    "newspaper": "VnExpress",
+    "category": "Đời sống",
+    "rss_url": "https://vnexpress.net/rss/doi-song.rss",
+    "title": "Đời sống - VnExpress RSS",
+    "description": "VnExpress RSS",
+    "link": "https://vnexpress.net/rss/doi-song.rss",
+    "added_date": "2025-09-18 03:09:37.475053"
+  },
+  "VnExpress_Thế giới": {
+    "newspaper": "VnExpress",
+    "category": "Thế giới",
+    "rss_url": "https://vnexpress.net/rss/the-gioi.rss",
+    "title": "Thế giới - VnExpress RSS",
+    "description": "VnExpress RSS",
+    "link": "https://vnexpress.net/rss/the-gioi.rss",
+    "added_date": "2025-09-19 00:15:42.957329"
+  },
+  "VietnamNet_Thời sự": {
+    "newspaper": "VietnamNet",
+    "category": "Thời sự",
+    "rss_url": "https://vietnamnet.vn/rss/thoi-su.rss",
+    "title": "Thời sự hôm nay - Tin tức thời sự cập nhật liên tục 24h qua",
+    "description": "Thời sự hôm nay - Cập nhật những tin tức thời sự nhanh nhất 24h qua, các vấn đề xã hội nóng hổi trong nước mới nhất tại báo VietNamNet.",
+    "link": "https://vietnamnet.vn/thoi-su.rss",
+    "added_date": "2025-09-19 00:15:59.106937"
+  },
+  "VietnamNet_Đời sống": {
+    "newspaper": "VietnamNet",
+    "category": "Đời sống",
+    "rss_url": "https://vietnamnet.vn/rss/doi-song.rss",
+    "title": "Đời sống hôm nay - Tổng hợp tin hay về đời sống xã hội mới nhất",
+    "description": "Đời sống hôm nay - Cùng Báo VietNamNet khám phá những điều thú vị của cuộc sống. Tâm sự gia đình, mẹo vặt hay, cẩm nang du lịch, cách nấu ăn ngon.",
+    "link": "https://vietnamnet.vn/doi-song.rss",
+    "added_date": "2025-09-19 00:16:12.550084"
+  },
+  "VietnamNet_Công nghệ": {
+    "newspaper": "VietnamNet",
+    "category": "Công nghệ",
+    "rss_url": "https://vietnamnet.vn/rss/cong-nghe.rss",
+    "title": "Doanh nghiệp công nghệ đổi mới sáng tạo theo nghị quyết 57",
+    "description": "Theo Nghị quyết 57, Việt Nam cần có tối thiểu có 5 doanh nghiệp công nghệ số ngang tầm các nước tiên tiến.",
+    "link": "https://vietnamnet.vn/nghi-quyet-57/doanh-nghiep-cong-nghe.rss",
+    "added_date": "2025-09-19 00:16:20.025063"
+  }
+}

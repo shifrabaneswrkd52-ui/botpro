@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beta Testing</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul>
+      <li><strong>Beta Testing</strong></li>
+    </ul>
+    <ul>
+      <li><a href="#">Trang chủ</a></li>
+      <li><a href="#">Tính năng</a></li>
+      <li><a href="#" role="button">Đăng ký</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <div class="grid">
+      <section>
+        <hgroup>
+          <h2>Chào mừng bạn!</h2>
+          <h3>Tham gia thử nghiệm và góp ý để chúng tôi cải tiến sản phẩm 🚀</h3>
+        </hgroup>
+        <p>Đây là phiên bản beta. Ý kiến của bạn sẽ giúp chúng tôi hoàn thiện hơn.</p>
+        
+        <h3>Form góp ý</h3>
+        <form onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã gửi góp ý!');">
+          <input type="text" id="name" name="name" placeholder="Tên của bạn" required />
+          <input type="email" id="email" name="email" placeholder="Email" required />
+          <textarea id="feedback" name="feedback" placeholder="Góp ý của bạn..." required></textarea>
+          <button type="submit">Gửi góp ý</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="container">
+    <small>
+      <a href="#">Chính sách bảo mật</a> • <a href="#">Liên hệ</a>
+    </small>
+  </footer>
+</body>
+</html>
