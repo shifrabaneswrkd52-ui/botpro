@@ -1,32 +1,31 @@
-import json
-from datetime import datetime
-from database.json_manager import load_ads, save_ads
+from sqlalchemy.orm import Session
+from database.config import SessionLocal
+from database.models import Ad
 from utils.logger import logger
 
 class AdService:
     def __init__(self):
-        self.ads = load_ads()
+        self.db = SessionLocal()
     
     def create_ad(self, title, content, image_path=None, schedule=None):
-        """Tạo quảng cáo mới"""
-        ad_id = f"ad_{len(self.ads) + 1}"
-        
-        self.ads[ad_id] = {
-            'title': title,
-            'content': content,
-            'image_path': image_path,
-            'schedule': schedule,
-            'created_at': str(datetime.now()),
-            'is_active': True,
-            'times_posted': 0
-        }
-        
-        save_ads(self.ads)
-        return ad_id
+        try:
+            ad = Ad(
+                title=title,
+                content=content,
+                image_path=image_path,
+                schedule=schedule
+            )
+            self.db.add(ad)
+            self.db.commit()
+            self.db.refresh(ad)
+            return ad.id
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error creating ad: {e}")
+            return None
     
-    def get_ad(self, ad_id):
-        """Lấy thông tin quảng cáo"""
-        return self.ads.get(ad_id)
+    def get_all_ads(self):
+        return self.db.query(Ad).all()
     
     def update_ad(self, ad_id, **kwargs):
         """Cập nhật quảng cáo"""

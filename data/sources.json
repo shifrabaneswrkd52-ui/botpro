@@ -61,5 +61,14 @@
     "description": "Theo Nghị quyết 57, Việt Nam cần có tối thiểu có 5 doanh nghiệp công nghệ số ngang tầm các nước tiên tiến.",
     "link": "https://vietnamnet.vn/nghi-quyet-57/doanh-nghiep-cong-nghe.rss",
     "added_date": "2025-09-19 00:16:20.025063"
+  },
+  "VietnamNet_Bất động sản": {
+    "newspaper": "VietnamNet",
+    "category": "Bất động sản",
+    "rss_url": "https://vietnamnet.vn/rss/bat-dong-san.rss",
+    "title": "Bất động sản - Tin tức thị trường nhà đất, dự án BĐS mới nhất",
+    "description": "Bất động sản - Tin tức mới nóng về giá nhà đất, các dự án bất động sản. Tư vấn mua bán nhà đất, mẫu thiết kế nhà đẹp, thiết kế nội thất hợp phong thủy.",
+    "link": "https://vietnamnet.vn/bat-dong-san.rss",
+    "added_date": "2025-09-20 23:55:54.969395"
   }
 }

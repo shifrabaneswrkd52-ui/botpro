@@ -1,30 +1,31 @@
+from sqlalchemy.orm import Session
+from database.config import SessionLocal
+from database.models import PostedArticle, Ad, Source, Channel
 from datetime import datetime, timedelta
-from database.json_manager import load_posted, load_ads, load_sources, load_channels
-from utils.logger import logger
 
 class StatsService:
+    def __init__(self):
+        self.db = SessionLocal()
+    
     def get_daily_stats(self):
-        """Lấy thống kê theo ngày"""
-        posted = load_posted()
-        ads = load_ads()
-        
         today = datetime.now().date()
-        daily_posts = 0
-        daily_ads = 0
         
-        for post in posted.values():
-            post_date = datetime.fromisoformat(post['posted_at']).date()
-            if post_date == today:
-                daily_posts += 1
+        daily_posts = self.db.query(PostedArticle).filter(
+            PostedArticle.posted_at >= today
+        ).count()
         
-        for ad in ads.values():
-            daily_ads += ad['times_posted']
+        daily_ads = self.db.query(Ad).filter(
+            Ad.times_posted > 0
+        ).count()
+        
+        total_posts = self.db.query(PostedArticle).count()
+        total_ads = self.db.query(Ad).count()
         
         return {
             'daily_posts': daily_posts,
             'daily_ads': daily_ads,
-            'total_posts': len(posted),
-            'total_ads': sum(ad['times_posted'] for ad in ads.values())
+            'total_posts': total_posts,
+            'total_ads': total_ads
         }
     
     def get_source_stats(self):

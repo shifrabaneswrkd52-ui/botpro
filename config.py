@@ -1,5 +1,9 @@
-import os
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Đường dẫn thư mục
 BASE_DIR = Path(__file__).parent
@@ -20,7 +24,7 @@ POSTED_FILE = DATA_DIR / "posted.json"
 TOKEN_FILE = DATA_DIR / "telegraph_token.json"
 
 # Bot token
-BOT_TOKEN = "8344274130:AAHh9i0UEhbl9OkcPrsmYGEnqZVm-Cqoz8o"
+BOT_TOKEN ="8344274130:AAHG5kqyHPAlwjJIIgRvjjOmFNf3yUJApgU"
 
 # Dữ liệu các báo và RSS feeds
 NEWSPAPERS = {

@@ -15,7 +15,7 @@ from handlers.command_handlers import start, articles_command, dashboard_command
 from handlers.callback_handlers import button_handler
 from handlers.message_handlers import handle_message
 from services.auto_poster import auto_poster
-
+from utils.error_handler import error_handler
 
 # ================== WEB SERVER (KEEP-ALIVE) ==================
 app = Flask(__name__)
@@ -24,12 +24,10 @@ app = Flask(__name__)
 def home():
     return "🤖 Telegram bot is alive on Render!"
 
-
 def run_web():
     """Chạy web server trên PORT mà Render yêu cầu"""
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
 
 # ================== TELEGRAM BOT ==================
 def run_bot():
@@ -43,6 +41,7 @@ def run_bot():
     dp.add_handler(CommandHandler("dashboard", dashboard_command))
     dp.add_handler(CallbackQueryHandler(button_handler))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dp.add_error_handler(error_handler)
 
     # Auto poster chạy trong thread riêng
     def start_auto_poster():
@@ -57,7 +56,6 @@ def run_bot():
     print("🤖 Bot đã chạy!")
     updater.start_polling()
     updater.idle()
-
 
 # ================== MAIN ==================
 if __name__ == "__main__":

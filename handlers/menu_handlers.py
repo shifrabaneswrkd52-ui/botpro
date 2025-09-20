@@ -213,6 +213,7 @@ def delete_channel(update: Update, context: CallbackContext, channel_id: str):
     query = update.callback_query
     query.answer()
     
+    from database.json_manager import load_channels, save_channels
     channels = load_channels()
     if channel_id in channels:
         del channels[channel_id]
@@ -228,6 +229,7 @@ def delete_source(update: Update, context: CallbackContext, source_id: str):
     query = update.callback_query
     query.answer()
     
+    from database.json_manager import load_sources, save_sources
     sources = load_sources()
     if source_id in sources:
         del sources[source_id]
@@ -237,7 +239,6 @@ def delete_source(update: Update, context: CallbackContext, source_id: str):
         query.edit_message_text("⚠️ Nguồn tin không tồn tại.")
     
     view_sources(update, context)
-
 def view_articles(update: Update, context: CallbackContext):
     """Xem bài viết mới nhất từ các nguồn"""
     query = update.callback_query
@@ -425,73 +426,114 @@ def view_stats(update: Update, context: CallbackContext):
     query.answer()
     
     from services.stats_service import stats_service
+    from database.json_manager import load_channels
+    
     daily_stats = stats_service.get_daily_stats()
     source_stats = stats_service.get_source_stats()
     channel_stats = stats_service.get_channel_stats()
-    weekly_stats = stats_service.get_weekly_stats()
     
     message = "📊 Thống kê chi tiết\n\n"
-    message += "📈 Hôm nay:\n"
-    message += f"   • Bài viết: {daily_stats['daily_posts']}\n"
-    message += f"   • Quảng cáo: {daily_stats['daily_ads']}\n\n"
+    message += f"📈 Hôm nay: {daily_stats['daily_posts']} bài + {daily_stats['daily_ads']} quảng cáo\n"
+    message += f"📊 Tổng: {daily_stats['total_posts']} bài + {daily_stats['total_ads']} quảng cáo\n\n"
     
-    message += "📰 Theo nguồn:\n"
-    for source, count in list(source_stats.items())[:5]:  # Hiển thị top 5
-        message += f"   • {source}: {count} bài\n"
+    message += "📰 Top nguồn tin:\n"
+    for source, count in list(source_stats.items())[:5]:
+        message += f"• {source}: {count} bài\n"
     
-    message += "\n📺 Theo kênh:\n"
+    message += "\n📺 Top kênh:\n"
     channels = load_channels()
-    for channel_id, count in list(channel_stats.items())[:3]:  # Hiển thị top 3
+    for channel_id, count in list(channel_stats.items())[:3]:
         channel_name = channels.get(channel_id, {}).get('title', channel_id)
-        message += f"   • {channel_name}: {count} bài\n"
-    
-    message += "\n📅 7 ngày qua:\n"
-    for date, count in weekly_stats.items():
-        message += f"   • {date}: {count} bài\n"
+        message += f"• {channel_name}: {count} bài\n"
     
     keyboard = [
         [InlineKeyboardButton("🔄 Làm mới", callback_data="view_stats")],
-        [InlineKeyboardButton("📊 Dashboard", callback_data="dashboard")],
         [InlineKeyboardButton("🔙 Menu chính", callback_data="back_main")]
     ]
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(message, reply_markup=reply_markup)
 
+def list_ads(update: Update, context: CallbackContext):
+    """Hiển thị danh sách quảng cáo"""
+    query = update.callback_query
+    query.answer()
+    
+    from services.ad_service import ad_service
+    ads = ad_service.get_all_ads()
+    
+    message = "📢 Danh sách Quảng cáo\n\n"
+    
+    if ads:
+        for ad_id, ad in ads.items():
+            status = "✅" if ad['is_active'] else "❌"
+            message += f"{status} {ad['title']} (Đã đăng: {ad['times_posted']})\n"
+    else:
+        message += "📭 Chưa có quảng cáo nào\n"
+    
+    keyboard = [
+        [InlineKeyboardButton("➕ Tạo quảng cáo", callback_data="create_ad")],
+        [InlineKeyboardButton("🔙 Quay lại", callback_data="manage_ads")]
+    ]
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.edit_message_text(message, reply_markup=reply_markup) 
+
 def view_posted_articles(update: Update, context: CallbackContext):
     """Xem bài viết đã đăng"""
     query = update.callback_query
     query.answer()
     
+    from database.json_manager import load_posted
     posted = load_posted()
     
     if not posted:
         query.edit_message_text(
-            "📭 Chưa có bài viết nào được đăng.\n\n"
-            "Hệ thống sẽ tự động đăng bài khi có bài viết mới từ các nguồn RSS.",
+            "📭 Chưa có bài viết nào được đăng.",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📰 Quản lý nguồn tin", callback_data="manage_articles")],
                 [InlineKeyboardButton("🔙 Menu chính", callback_data="back_main")]
             ])
         )
         return
     
     message = "📋 Bài viết đã đăng:\n\n"
-    for i, (article_id, article_info) in enumerate(list(posted.items())[-10:], 1):  # 10 bài gần nhất
+    for i, (article_id, article_info) in enumerate(list(posted.items())[-10:], 1):
         message += f"{i}. {article_info['title']}\n"
         message += f"   📰 {article_info['source']} - {article_info['category']}\n"
         message += f"   📅 {article_info['posted_at'][:16]}\n"
-        message += f"   📺 Kênh: {article_info['channel']}\n"
         message += "─" * 40 + "\n"
     
     keyboard = [
-        [InlineKeyboardButton("🗑️ Xóa lịch sử", callback_data="clear_posted_history")],
         [InlineKeyboardButton("🔄 Làm mới", callback_data="view_posted_articles")],
         [InlineKeyboardButton("🔙 Menu chính", callback_data="back_main")]
     ]
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(message, reply_markup=reply_markup)
+
+def channel_detail_menu(update: Update, context: CallbackContext, channel_id: str):
+    """Menu chi tiết cho kênh"""
+    query = update.callback_query
+    query.answer()
+    
+    channels = load_channels()
+    channel_info = channels.get(channel_id, {})
+    
+    keyboard = [
+        [InlineKeyboardButton("📊 Xem thống kê", callback_data=f"stats_{channel_id}")],
+        [InlineKeyboardButton("⚙️ Cài đặt", callback_data=f"settings_{channel_id}")],
+        [InlineKeyboardButton("🗑️ Xóa kênh", callback_data=f"delete_channel_{channel_id}")],
+        [InlineKeyboardButton("🔙 Quay lại", callback_data="manage_channels")]
+    ]
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.edit_message_text(
+        f"📺 Chi tiết kênh: {channel_info.get('title', channel_id)}\n\n"
+        f"👤 Username: {channel_info.get('username', 'N/A')}\n"
+        f"📅 Ngày thêm: {channel_info.get('added_date', 'N/A')}",
+        reply_markup=reply_markup
+    )
+
 
 def manage_backup(update: Update, context: CallbackContext):
     """Quản lý backup"""
@@ -512,12 +554,86 @@ def manage_backup(update: Update, context: CallbackContext):
     
     keyboard = [
         [InlineKeyboardButton("➕ Tạo backup", callback_data="create_backup")],
-        [InlineKeyboardButton("🔄 Khôi phục", callback_data="restore_backup")],
+        [InlineKeyboardButton("🔄 Khôi phục", callback_data="restore_backup_menu")],
         [InlineKeyboardButton("🔙 Menu chính", callback_data="back_main")]
     ]
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(message, reply_markup=reply_markup)
+
+def restore_backup_menu(update: Update, context: CallbackContext):
+    """Menu khôi phục backup"""
+    query = update.callback_query
+    query.answer()
+    
+    from services.backup_service import backup_service
+    backups = backup_service.list_backups()
+    
+    if not backups:
+        query.edit_message_text("📭 Chưa có backup nào để khôi phục")
+        return
+    
+    keyboard = []
+    for backup in backups[:5]:  # Hiển thị tối đa 5 backup
+        keyboard.append([InlineKeyboardButton(
+            backup['created_at'], 
+            callback_data=f"restore_{backup['name']}"
+        )])
+    
+    keyboard.append([InlineKeyboardButton("🔙 Quay lại", callback_data="manage_backup")])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.edit_message_text("📦 Chọn backup để khôi phục:", reply_markup=reply_markup)
+
+def manage_backup(update: Update, context: CallbackContext):
+    """Quản lý backup"""
+    query = update.callback_query
+    query.answer()
+    
+    from services.backup_service import backup_service
+    backups = backup_service.list_backups()
+    
+    message = "💾 Quản lý Backup\n\n"
+    
+    if backups:
+        message += "📦 Danh sách backup:\n"
+        for i, backup in enumerate(backups[:5], 1):
+            message += f"{i}. {backup['created_at']}\n"
+    else:
+        message += "📭 Chưa có backup nào\n"
+    
+    keyboard = [
+        [InlineKeyboardButton("➕ Tạo backup", callback_data="create_backup")],
+        [InlineKeyboardButton("🔄 Khôi phục", callback_data="restore_backup_menu")],
+        [InlineKeyboardButton("🔙 Menu chính", callback_data="back_main")]
+    ]
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.edit_message_text(message, reply_markup=reply_markup)
+
+def restore_backup_menu(update: Update, context: CallbackContext):
+    """Menu khôi phục backup"""
+    query = update.callback_query
+    query.answer()
+    
+    from services.backup_service import backup_service
+    backups = backup_service.list_backups()
+    
+    if not backups:
+        query.edit_message_text("📭 Chưa có backup nào để khôi phục")
+        return
+    
+    keyboard = []
+    for backup in backups[:5]:  # Hiển thị tối đa 5 backup
+        keyboard.append([InlineKeyboardButton(
+            backup['created_at'], 
+            callback_data=f"restore_{backup['name']}"
+        )])
+    
+    keyboard.append([InlineKeyboardButton("🔙 Quay lại", callback_data="manage_backup")])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.edit_message_text("📦 Chọn backup để khôi phục:", reply_markup=reply_markup)
 
     # Lưu trạng thái để xử lý trong message handler
     user_id = str(query.from_user.id)

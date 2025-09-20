@@ -1,8 +1,8 @@
-import time
+# services/auto_poster.py
+import asyncio
 import random
-import asyncio  # THÊM DÒNG NÀY
 from datetime import datetime
-from database.json_manager import load_sources, load_channels, load_posted, save_posted
+from database.json_manager import load_sources, load_posted, save_posted
 from services.rss_service import get_latest_articles
 from services.telegram_service import send_to_channel
 from services.schedule_service import schedule_service
@@ -18,23 +18,23 @@ class AutoPoster:
         self.is_running = True
         while self.is_running:
             await self.check_schedules_and_post()
-            await asyncio.sleep(60)  # Kiểm tra mỗi phút
+            await asyncio.sleep(60)
     
     async def check_schedules_and_post(self):
-        """Kiểm tra lịch trình và đăng bài (tối ưu hóa)"""
+        """Kiểm tra lịch trình và đăng bài"""
         try:
             schedules = schedule_service.get_all_schedules()
             current_time = datetime.now()
-        
+            
             for schedule_id, schedule in schedules.items():
                 if not schedule['enabled']:
                     continue
-            
+                
                 if self.should_post_now(schedule, current_time):
                     logger.info(f"⏰ Đến giờ đăng bài cho schedule {schedule_id}")
                     await self.post_to_channel(schedule['channel_id'])
                     schedule_service.update_schedule(schedule_id, last_run=str(current_time))
-                
+                    
         except Exception as e:
             logger.error(f"Lỗi trong auto-poster: {e}")
     
@@ -49,12 +49,16 @@ class AutoPoster:
     
     async def post_to_channel(self, channel_id):
         """Đăng bài đến kênh cụ thể"""
-        # Đăng bài viết từ RSS
-        await self.post_rss_articles(channel_id)
-        
-        # Đăng quảng cáo (20% cơ hội)
-        if random.random() < 0.2:
-            await self.post_ad(channel_id)
+        try:
+            await self.post_rss_articles(channel_id)
+            
+            if random.random() < 0.2:
+                await self.post_ad(channel_id)
+            
+            return True
+        except Exception as e:
+            logger.error(f"❌ Lỗi khi đăng bài đến {channel_id}: {e}")
+            return False
     
     async def post_rss_articles(self, channel_id):
         """Đăng bài viết RSS"""
@@ -62,7 +66,7 @@ class AutoPoster:
         posted = load_posted()
         
         if not sources:
-            return
+            return False
         
         for source_id, source_info in sources.items():
             articles = get_latest_articles(source_info['rss_url'], 3)
@@ -85,7 +89,9 @@ class AutoPoster:
                         logger.info(f"✅ Đã đăng bài đến {channel_id}: {article['title']}")
                     
                     save_posted(posted)
-                    time.sleep(1)  # Chờ 1 giây giữa các bài đăng
+                    await asyncio.sleep(1)
+        
+        return True
     
     async def post_ad(self, channel_id):
         """Đăng quảng cáo ngẫu nhiên"""
@@ -101,6 +107,9 @@ class AutoPoster:
             if success:
                 ad_service.increment_post_count(ad_id)
                 logger.info(f"✅ Đã đăng quảng cáo: {ad['title']}")
+                return True
+        
+        return False
     
     def format_article_message(self, article, source_info):
         """Định dạng tin nhắn bài viết"""
@@ -108,7 +117,6 @@ class AutoPoster:
         message += f"📖 {article.get('summary', '')[:200]}...\n\n"
         message += f"📰 Nguồn: {source_info['newspaper']} - {source_info['category']}\n"
         message += f"🔗 Xem thêm: {article['link']}"
-        
         return message
     
     def stop(self):
